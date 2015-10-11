@@ -15,25 +15,25 @@
     When maintenance switch present managed devices will be put into maintenace mode. When absent managed devices will be put into managed mode.
 
 .EXAMPLE
-    Set-Maintenance.ps1
+    Set-OneClickMaintenance.ps1
 
 .EXAMPLE
-    Set-Maintenance.ps1 10.1.1.1 "Patching server until 20150109 1700 " -Maintenance 
+    Set-OneClickMaintenance.ps1 10.1.1.1 "Patching server until 20150109 1700 " -Maintenance 
 
 .EXAMPLE
-    Set-Maintenance.ps1 10.1.1.1
+    Set-OneClickMaintenance.ps1 10.1.1.1
 
 .EXAMPLE
-    Set-Maintenance.ps1 servername "Patching server until 20150109 1700" -Maintenance 
+    Set-OneClickMaintenance.ps1 servername "Patching server until 20150109 1700" -Maintenance 
  
  .EXAMPLE
-    Set-Maintenance.ps1 servername
+    Set-OneClickMaintenance.ps1 servername
 
 .EXAMPLE
-    Set-Maintenance.ps1 -Notes "Patching server until 20150109 1700" -FilePath "C:\scripts\hostnames.txt" -Maintenance
+    Set-OneClickMaintenance.ps1 -Notes "Patching server until 20150109 1700" -FilePath "C:\scripts\hostnames.txt" -Maintenance
 
 .EXAMPLE
-    Set-Maintenance.ps1 -FilePath "C:\scripts\hostnames.txt" 
+    Set-OneClickMaintenance.ps1 -FilePath "C:\scripts\hostnames.txt" 
 
 .INPUTS
     A single host name or IP address of a computer that will have its managed state changed.
