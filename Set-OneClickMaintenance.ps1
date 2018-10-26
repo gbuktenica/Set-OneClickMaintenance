@@ -1,7 +1,7 @@
-<#  
-.SYNOPSIS  
+<#
+.SYNOPSIS
     Sets the maintenance status of a device in Spectrum Oneclick.
-                
+
 .PARAMETER ManagedDevice
     A single host name or IP address of a computer that will have its managed state changed.
 
@@ -18,14 +18,14 @@
     Set-OneClickMaintenance.ps1
 
 .EXAMPLE
-    Set-OneClickMaintenance.ps1 10.1.1.1 "Patching server until 20150109 1700 " -Maintenance 
+    Set-OneClickMaintenance.ps1 10.1.1.1 "Patching server until 20150109 1700 " -Maintenance
 
 .EXAMPLE
     Set-OneClickMaintenance.ps1 10.1.1.1
 
 .EXAMPLE
-    Set-OneClickMaintenance.ps1 servername "Patching server until 20150109 1700" -Maintenance 
- 
+    Set-OneClickMaintenance.ps1 servername "Patching server until 20150109 1700" -Maintenance
+
  .EXAMPLE
     Set-OneClickMaintenance.ps1 servername
 
@@ -33,24 +33,24 @@
     Set-OneClickMaintenance.ps1 -Notes "Patching server until 20150109 1700" -FilePath "C:\scripts\hostnames.txt" -Maintenance
 
 .EXAMPLE
-    Set-OneClickMaintenance.ps1 -FilePath "C:\scripts\hostnames.txt" 
+    Set-OneClickMaintenance.ps1 -FilePath "C:\scripts\hostnames.txt"
 
 .INPUTS
     A single host name or IP address of a computer that will have its managed state changed.
 
 .OUTPUTS
-    None 
+    None
 
-.NOTES  
+.NOTES
     Author     : Glen Buktenica
-	  Change Log : Initial Build  20150311 
+      Change Log : Initial Build  20150311
                  Public Release 20151006
     License    : The MIT License (MIT)
                  http://opensource.org/licenses/MIT
 
 .LINK
     http://blog.buktenica.com
-#> 
+#>
 # Requires -version 4
 
 #
@@ -72,7 +72,7 @@ Param(
     $username = "Username" # This account needs write access
     $password = "Password"
 
-# DO NOT PUT INLINE COMMENTS INTO XML OR TAB INDENTS
+# DO NOT PUT INLINE COMMENTS INTO XML OR INDENTS
 $XMLHeader = @'
 <?xml version="1.0" encoding="UTF-8"?>
 <rs:model-request throttlesize="5"
@@ -120,7 +120,7 @@ $XMLFooter = @'
         $ScriptName = [io.path]::GetFileNameWithoutExtension($ScriptName)
         $LogPath = "$CurrentPath\$ScriptName.log"
         $ErrorPath = "$CurrentPath\$ScriptName.err.log"
-        
+
         # Standard
         If(($Host.UI.RawUI.BufferSize.Height -gt 0) -and ($Logging)) # Make sure not running in ISE
         {
@@ -130,7 +130,7 @@ $XMLFooter = @'
             }
         }
         # Error
-        If ($ErrorPath.Length -gt 0) 
+        If ($ErrorPath.Length -gt 0)
         {
             trap {$_ | Out-File -FilePath $ErrorPath -append; continue;}
         }
@@ -141,10 +141,9 @@ $XMLFooter = @'
 # Functions start here #
 #                      #
 ########################
-Function Select-GUI
-{
-<#  
-.SYNOPSIS  
+Function Select-GUI {
+<#
+.SYNOPSIS
     Open or save files or open folders using Windows forms.
 
 .PARAMETER Start
@@ -175,18 +174,18 @@ Function Select-GUI
     None. You cannot pipe objects to this function.
 
 .OUTPUTS
-    Full path of Folder or file    
+    Full path of Folder or file
 
-.NOTES  
+.NOTES
     Author     : Glen Buktenica
-	Change Log : Initial Build  20150130
+    Change Log : Initial Build  20150130
                  Public Release 20151005
     License    : The MIT License (MIT)
                  http://opensource.org/licenses/MIT
 
 .LINK
     http://blog.buktenica.com
-#> 
+#>
 Param (
     [parameter(Position=1)][string] $Start = ([Environment]::GetFolderPath('Desktop')),
     [parameter(Position=2)][String] $Description,
@@ -196,7 +195,7 @@ Param (
     [Switch] $UNC
 )
     Add-Type -AssemblyName System.Windows.Forms
-    
+
     If ($File)
     {
         If ($Save)
@@ -222,7 +221,7 @@ Param (
         }
         If ($OpenForm.showdialog() -eq "Cancel")
         {
-            Write-Error "You pressed cancel, script will now terminate." 
+            Write-Error "You pressed cancel, script will now terminate."
             Start-Sleep -Seconds 2
             Break
         }
@@ -243,7 +242,7 @@ Param (
             $A = $OpenForm.showdialog([IntPtr]::Zero)
             If (!($OpenForm.FileName))
             {
-                Write-Error "You pressed cancel, script will now terminate." 
+                Write-Error "You pressed cancel, script will now terminate."
                 Start-Sleep -Seconds 2
                 Exit
             }
@@ -266,7 +265,7 @@ Param (
 
             If ($OpenForm.showdialog() -eq "Cancel")
             {
-                Write-Error "You pressed cancel, script will now terminate." 
+                Write-Error "You pressed cancel, script will now terminate."
                 Start-Sleep -Seconds 2
                 Exit
             }
@@ -291,22 +290,20 @@ $sPassword = ConvertTo-SecureString -String $Password -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ($UserName, $sPassword)
 $IPAddresses = @()
 
-If ((!($FilePath) -or !(Test-Path $FilePath -ErrorAction SilentlyContinue)) -and ($ManagedDevice.length -eq 0))
-{ 
+If ((!($FilePath) -or !(Test-Path $FilePath -ErrorAction SilentlyContinue)) -and ($ManagedDevice.length -eq 0)) {
     #If no parameters passed, or if the file doesn't exist...
-    Clear-Host 
+    Clear-Host
     Write-Host "1. Single host or IP address"
-    Write-Host "2. Select TXT file with host or IP" 
-    Write-Host "3. Current host" 
+    Write-Host "2. Select TXT file with host or IP"
+    Write-Host "3. Current host"
 
-    $Answer = Read-Host "Any other key to exit"        
-    Switch ($Answer) 
-    {
+    $Answer = Read-Host "Any other key to exit"
+    Switch ($Answer) {
         1 {$ManagedDevice = Read-Host "Enter host/IP"}
         2 {Write-Host "Select Text file with one hostname per line"
            $FilePath = Select-GUI -Ext "txt" -File}
         3 {$ManagedDevice = (Get-NetIPAddress).IPAddress | Where-Object {$_ -notlike "127*" -and $_ -notlike "*::*" -and $_ -notlike ""}} #Ignore loop back and IPv6 addresses
-        default 
+        default
         {
             Write-Host "Script will now terminate"
             Start-Sleep -s 5
@@ -316,11 +313,10 @@ If ((!($FilePath) -or !(Test-Path $FilePath -ErrorAction SilentlyContinue)) -and
 
     Clear-Host
     Write-Host "1. Set Hosts to Maintenance Mode"
-    Write-Host "2. Set Hosts to Managed Mode" 
+    Write-Host "2. Set Hosts to Managed Mode"
 
     $Answer = Read-Host "Any other key to exit"
-    Switch ($Answer) 
-    {
+    Switch ($Answer) {
         1 {$Managed = 'False'}
         2 {$Managed = 'True'}
         default {
@@ -330,52 +326,43 @@ If ((!($FilePath) -or !(Test-Path $FilePath -ErrorAction SilentlyContinue)) -and
         }
     }
 }
-Else
-{
-    If ($Maintenance)
-    {
+Else {
+    If ($Maintenance) {
         Write-Verbose "Setting to Maintenance Mode"
         $Managed = "false"
     }
-    Else
-    {
+    Else {
         Write-Verbose "Setting to Managed Mode"
         $Managed = "true"
     }
 }
 
-If ($FilePath.length -gt 0)
-{
+If ($FilePath.length -gt 0) {
     $Hostnames = Get-Content $FilePath
     Foreach ($Hostname in $Hostnames)
     {
-        If ($Hostname[0] -match "^[1-9]+$")
-        {
+        If ($Hostname[0] -match "^[1-9]+$") {
             $IPaddresses += $Hostname
         }
-        ElseIf ($Hostname.Length -gt 0)
-        {
-            $IPaddresses += [System.Net.Dns]::GetHostAddresses($Hostname) 
+        ElseIf ($Hostname.Length -gt 0) {
+            $IPaddresses += [System.Net.Dns]::GetHostAddresses($Hostname)
         }
     }
 }
 
-ElseIf ($ManagedDevice[0] -match "^[1-9]+$")
-{
+ElseIf ($ManagedDevice[0] -match "^[1-9]+$") {
     Write-Verbose "IP address received "
     $IPAddresses = $ManagedDevice
     If ($IPaddresses) {Write-verbose $IPAddresses}
 }
-Else
-{
+Else {
     Write-Verbose "Host name received "
     Write-Verbose $ManagedDevice
     $IPaddresses = [System.Net.Dns]::GetHostAddresses($ManagedDevice).IPAddressToString
     Write-verbose $IPAddresses
 }
 
-While (($Managed -eq "false") -and ($Notes.Length -lt 4))
-{
+While (($Managed -eq "false") -and ($Notes.Length -lt 4)) {
     Write-Host "Notes are mandatory when devices are being set to maintenance mode"
     $Notes = Read-Host "Enter notes"
 }
@@ -387,8 +374,7 @@ $URI = $Spectrum + "models"
 $IPAddresses = $IPAddresses | Get-Unique
 Write-Verbose "Getting Model ID's"
 
-Foreach ($IP in $IPAddresses)
-{
+foreach ($IP in $IPAddresses) {
     Write-Verbose "Getting IP Address"
     Write-Verbose "------------------------------------------"
     Write-Verbose $IP
@@ -410,31 +396,26 @@ Foreach ($IP in $IPAddresses)
     $Response.Close()
 
     $ModelIDs = $ResponseText.'model-response-list'.'model-responses'.model.mh
-    
-    ForEach ($ModelID in $ModelIDs)
-    {
-        If ($ModelID.length -gt 0)
-        {
+
+    forEach ($ModelID in $ModelIDs) {
+        If ($ModelID.length -gt 0) {
             Write-Verbose $ModelID
             #Set managed state
             $URIPut = $Spectrum + "model/" + $ModelID + "?attr=0x1295d&val=" + $Managed
             Invoke-RestMethod -Uri $URIPut -Credential $Credential -Method Put
 
             # Set Comment
-            If ($Managed -eq "false")
-            {
+            If ($Managed -eq "false") {
                 $URIPut = $Spectrum + "model/" + $ModelID + "?attr=0x11564&val=" + $Notes
-                Invoke-RestMethod -Uri $URIPut -Credential $Credential -Method Put  
+                Invoke-RestMethod -Uri $URIPut -Credential $Credential -Method Put
             }
-            Else
-            {
+            Else {
                 $URIPut = $Spectrum + "model/" + $ModelID + "?attr=0x11564&val="
-                Invoke-RestMethod -Uri $URIPut -Credential $Credential -Method Put 
+                Invoke-RestMethod -Uri $URIPut -Credential $Credential -Method Put
             }
         }
- 
-        Else
-        {
+
+        Else {
             Write-Verbose "No Model ID found"
         }
     }
